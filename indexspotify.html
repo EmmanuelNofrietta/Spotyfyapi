@@ -3,154 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spotify Artists</title>
+    <title>Buscar Definición de Palabras</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
         }
-        .artist {
-            border: 1px solid #ddd;
-            margin: 10px;
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .input-group input {
+            width: 100%;
             padding: 10px;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
+            border-radius: 4px;
+            border: 1px solid #ccc;
         }
-        .artist img {
-            border-radius: 50%;
-            margin-right: 20px;
+        button {
+            padding: 10px 20px;
+            background-color: #b91d1d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
         }
-        .artist-info {
-            flex-grow: 1;
+        button:hover {
+            background-color: #a31a1a;
+        }
+        .definition {
+            margin-top: 20px;
+        }
+        .definition h2 {
+            margin: 0 0 10px;
+        }
+        .definition p {
+            margin: 5px 0;
         }
     </style>
 </head>
 <body>
-
-    <h1>Artistas de Spotify</h1>
-    <div id="artists"></div>
+    <div class="container">
+        <h1>Buscar Definición de Palabras</h1>
+        <div class="input-group">
+            <label for="word">Ingrese la palabra en inglés:</label>
+            <input type="text" id="word" placeholder="Ejemplo: example">
+        </div>
+        <button onclick="fetchDefinition()">Buscar</button>
+        <div id="definition" class="definition"></div>
+    </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const data = {
-                "artists": {
-                    "items": [
-                        {
-                            "external_urls": {
-                                "spotify": "https://open.spotify.com/artist/0kbYTNQb4Pb1rPbbaF0pT4"
-                            },
-                            "followers": {
-                                "total": 2528411
-                            },
-                            "genres": [
-                                "cool jazz",
-                                "hard bop",
-                                "jazz",
-                                "jazz fusion",
-                                "jazz trumpet",
-                                "soul",
-                                "vocal jazz"
-                            ],
-                            "images": [
-                                {
-                                    "url": "https://i.scdn.co/image/423e826b3c1b23930a255d7cbc2daf733f795507",
-                                }
-                            ],
-                            "name": "Miles Davis",
-                            "popularity": 60,
-                        },
-                        {
-                            "external_urls": {
-                                "spotify": "https://open.spotify.com/artist/2hGh5VOeeqimQFxqXvfCUf"
-                            },
-                            "followers": {
-                                "total": 1646829
-                            },
-                            "genres": [
-                                "bebop",
-                                "free jazz",
-                                "jazz",
-                                "jazz saxophone",
-                                "vocal jazz"
-                            ],
-                            "images": [
-                                {
-                                    "url": "https://i.scdn.co/image/ab6761610000e5eb73c7f7505c1af82929ec41df",
-                                }
-                            ],
-                            "name": "John Coltrane",
-                            "popularity": 61,
-                        },
-                        {
-                            "external_urls": {
-                                "spotify": "https://open.spotify.com/artist/4sQVPSDmfqIxG9W8o2EROX"
-                            },
-                            "followers": {
-                                "total": 101159
-                            },
-                            "genres": [
-                                "bebop",
-                                "jazz",
-                                "jazz quartet"
-                            ],
-                            "images": [
-                                {
-                                    "url": "https://i.scdn.co/image/ab67616d0000b27364351626df25d938db9b9f2f",
-                                }
-                            ],
-                            "name": "Miles Davis Quartet",
-                            "popularity": 32,
-                        },
-                        // Añade más artistas aquí según el JSON proporcionado.
-                    ]
-                }
-            };
+        async function fetchDefinition() {
+            const word = document.getElementById('word').value;
+            const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
 
-            const artistsContainer = document.getElementById('artists');
+            if (response.ok) {
+                const data = await response.json();
+                displayDefinition(data[0]);
+            } else {
+                alert('No se pudo encontrar la definición. Por favor, revise la palabra ingresada.');
+            }
+        }
 
-            data.artists.items.forEach(artist => {
-                const artistDiv = document.createElement('div');
-                artistDiv.className = 'artist';
+        function displayDefinition(data) {
+            const definitionContainer = document.getElementById('definition');
+            const meanings = data.meanings.map(meaning => `
+                <h3>${meaning.partOfSpeech}</h3>
+                ${meaning.definitions.map(def => `<p>${def.definition}</p>`).join('')}
+            `).join('');
 
-                const artistImage = document.createElement('img');
-                artistImage.src = artist.images[0].url;
-                artistImage.alt = artist.name;
-                artistImage.width = 100;
-                artistImage.height = 100;
-                artistDiv.appendChild(artistImage);
-
-                const artistInfo = document.createElement('div');
-                artistInfo.className = 'artist-info';
-
-                const artistName = document.createElement('h2');
-                artistName.textContent = artist.name;
-                artistInfo.appendChild(artistName);
-
-                const artistFollowers = document.createElement('p');
-                artistFollowers.textContent = `Seguidores: ${artist.followers.total}`;
-                artistInfo.appendChild(artistFollowers);
-
-                const artistGenres = document.createElement('p');
-                artistGenres.textContent = `Géneros: ${artist.genres.join(', ')}`;
-                artistInfo.appendChild(artistGenres);
-
-                const artistPopularity = document.createElement('p');
-                artistPopularity.textContent = `Popularidad: ${artist.popularity}`;
-                artistInfo.appendChild(artistPopularity);
-
-                const artistLink = document.createElement('a');
-                artistLink.href = artist.external_urls.spotify;
-                artistLink.textContent = 'Ver en Spotify';
-                artistLink.target = '_blank';
-                artistInfo.appendChild(artistLink);
-
-                artistDiv.appendChild(artistInfo);
-                artistsContainer.appendChild(artistDiv);
-            });
-        });
+            definitionContainer.innerHTML = `
+                <h2>${data.word}</h2>
+                ${meanings}
+            `;
+        }
     </script>
-
 </body>
 </html>
-
-
